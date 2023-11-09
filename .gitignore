@@ -1,0 +1,124 @@
+import random
+
+def print_board(board):
+    print(' '+board[7]+' | '+board[8]+' | '+board[9])
+    print('———--—-')
+    print(' '+board[4]+' | '+board[5]+' | '+board[6])
+    print('———--—-')
+    print(' '+board[1]+' | '+board[2]+' | '+board[3])
+
+def choose_marker():
+    marker = ''
+    while marker != 'X' and marker != 'O':
+        marker = input('Игрок 1: Вы хотите быть X или O? ').upper()
+    if marker == 'X':
+        return ('X', 'O')
+    else:
+        return ('O', 'X')
+
+def place_marker(board, marker, position):
+    board[position] = marker
+
+def check_win(board, marker):
+    return ((board[7] == board[8] == board[9] == marker) or
+    (board[4] == board[5] == board[6] == marker) or
+    (board[1] == board[2] == board[3] == marker) or
+    (board[7] == board[4] == board[1] == marker) or
+    (board[8] == board[5] == board[2] == marker) or
+    (board[9] == board[6] == board[3] == marker) or
+    (board[7] == board[5] == board[3] == marker) or
+    (board[9] == board[5] == board[1] == marker))
+
+def choose_first():
+    if random.randint(0, 1) == 0:
+        return 'Компьютер'
+    else:
+        return 'Игрок 1'
+
+def space_check(board, position):
+    return board[position] == ' '
+
+def full_board_check(board):
+    for i in range(1, 10):
+        if space_check(board, i):
+            return False
+    return True
+
+def player_choice(board):
+    position = 0
+    while position not in range(1, 10) or not space_check(board, position):
+        position = int(input('Выберите следующую позицию: (1-9) '))
+    return position
+
+def computer_choice(board, computer_marker):
+    for i in range(1,10):
+        if space_check(board, i):
+            board_copy = board.copy()
+            place_marker(board_copy, computer_marker, i)
+            if check_win(board_copy, computer_marker):
+                return i
+
+    for i in range(1, 10):
+        if space_check(board, i):
+            board_copy = board.copy()
+            place_marker(board_copy, 'X' if computer_marker == 'O' else 'O', i)
+            if check_win(board_copy, 'X' if computer_marker == 'O' else 'O'):
+                return i
+
+    corners = [i for i in [1, 3, 7, 9] if space_check(board, i)]
+    if corners:
+        return random.choice(corners)
+
+    if space_check(board, 5):
+        return 5
+
+    return random.choice([i for i in range(1, 10) if space_check(board, i)])
+
+while True:
+    game_board = [' '] * 10
+
+    player_marker, computer_marker = choose_marker()
+    turn = choose_first()
+    print(turn + ' будет ходить первым.')
+
+    play_game = input('Вы готовы играть? Введите Y или N. ')
+    if play_game.lower() == 'y':
+        game_on = True
+    else:
+        game_on = False
+
+    while game_on:
+        if turn == 'Игрок 1':
+            print_board(game_board)
+            position = player_choice(game_board)
+            place_marker(game_board, player_marker, position)
+
+            if check_win(game_board, player_marker):
+                print_board(game_board)
+                print('Поздравляем! Вы выиграли игру!')
+                game_on = False
+            else:
+                if full_board_check(game_board):
+                    print_board(game_board)
+                    print('Игра закончилась вничью!')
+                    break
+                else:
+                    turn = 'Компьютер'
+        else:
+            position = computer_choice(game_board, computer_marker)
+            place_marker(game_board, computer_marker, position)
+
+            if check_win(game_board, computer_marker):
+                print_board(game_board)
+                print('Компьютер победил вас! Вы проиграли.')
+                game_on = False
+            else:
+                if full_board_check(game_board):
+                    print_board(game_board)
+                    print('Игра закончилась вничью!')
+                    break
+                else:
+                    turn = 'Игрок 1'
+
+    if not input('Вы хотите сыграть снова? Введите Y или N: ').lower() == 'y':
+        break
